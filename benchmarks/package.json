@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench": "node --expose-gc bench.mjs",
+    "check": "node bench.mjs --check"
+  },
+  "devDependencies": {
+    "mitata": "1.0.34"
+  }
+}

@@ -1,0 +1,13 @@
+[package]
+name = "wasm-bindgen-benchmarks"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+test = false
+doctest = false
+
+[dependencies]
+wasm-bindgen = { version = "=0.2.129", default-features = false }

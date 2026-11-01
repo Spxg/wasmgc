@@ -1,0 +1,20 @@
+[book]
+title = "The wasmgc Guide"
+description = "Using WebAssembly GC from Rust"
+language = "en"
+src = "src"
+
+[rust]
+edition = "2024"
+
+[build]
+build-dir = "../target/guide"
+create-missing = false
+
+[output.html]
+site-url = "/"
+git-repository-url = "https://github.com/Spxg/wasmgc"
+edit-url-template = "https://github.com/Spxg/wasmgc/edit/master/guide/{path}"
+
+[output.html.playground]
+runnable = false

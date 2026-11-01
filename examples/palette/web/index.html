@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>wasmgc palette</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./main.mjs"></script>
+</head>
+<body>
+    <main>
+        <h1>Shared palette</h1>
+        <p>3 colors shared by 6,144 cells (96 × 64). Select a color to edit all its cells.</p>
+        <p id="status" role="status" data-state="loading">Loading WasmGC…</p>
+        <p id="error" role="alert" hidden></p>
+
+        <label class="canvas-toolbar" for="cell-size">
+            Cell size <input id="cell-size" type="range" min="8" max="32" step="4" value="24">
+            <output id="cell-size-value" for="cell-size">24 px</output>
+        </label>
+        <div class="canvas-viewport">
+            <div id="canvas" role="group" aria-label="Canvas tiles. Scroll to explore. Use arrow keys to move, and Enter to select a color." aria-busy="true"></div>
+        </div>
+
+        <fieldset id="controls" disabled>
+            <legend id="editor-title">Color 1</legend>
+            <div class="palette" aria-label="Choose a palette color">
+                <button class="palette-color" type="button" data-color="0" aria-label="Select color 1" aria-pressed="true"><span class="swatch" aria-hidden="true"></span>1</button>
+                <button class="palette-color" type="button" data-color="1" aria-label="Select color 2" aria-pressed="false"><span class="swatch" aria-hidden="true"></span>2</button>
+                <button class="palette-color" type="button" data-color="2" aria-label="Select color 3" aria-pressed="false"><span class="swatch" aria-hidden="true"></span>3</button>
+            </div>
+            <label>Color <input id="picker" type="color" value="#eb504b"></label>
+            <output id="hex">#EB504B</output>
+
+            <label class="channel" for="r">
+                R <input id="r" type="range" min="0" max="255" value="235">
+                <output id="r-value" for="r">235</output>
+            </label>
+            <label class="channel" for="g">
+                G <input id="g" type="range" min="0" max="255" value="80">
+                <output id="g-value" for="g">80</output>
+            </label>
+            <label class="channel" for="b">
+                B <input id="b" type="range" min="0" max="255" value="75">
+                <output id="b-value" for="b">75</output>
+            </label>
+        </fieldset>
+        <p><button id="reset" type="button" disabled>Reset</button></p>
+    </main>
+</body>
+</html>

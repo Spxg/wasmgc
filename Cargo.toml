@@ -1,0 +1,54 @@
+[package]
+name = "wasmgc"
+version = "0.0.0"
+authors = ["Spxg <noz@live.com>"]
+repository = "https://github.com/Spxg/wasmgc"
+description = "WasmGC types for Rust with a post-link toolchain"
+keywords = ["wasm", "webassembly", "wasmgc", "gc", "garbage-collection"]
+readme.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[lib]
+test = false
+doctest = false
+
+[[bin]]
+name = "wasmgc"
+path = "src/bin/wasmgc.rs"
+required-features = ["cli"]
+test = false
+
+[[example]]
+name = "wasm_tests"
+path = "tests/wasm/lib.rs"
+crate-type = ["cdylib"]
+test = false
+
+[workspace]
+members = [
+    "crates/wasmgc-macros",
+    "examples/breakout",
+    "examples/palette",
+]
+resolver = "3"
+
+[workspace.package]
+readme = "README.md"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+wasmgc-macros = { path = "crates/wasmgc-macros", version = "0.0.0" }
+wasmparser = { version = "0.263.0", default-features = false, optional = true }
+wasm-encoder = { version = "0.263.0", default-features = false, features = ["wasmparser"], optional = true }
+
+[features]
+default = ["alloc"]
+alloc = []
+cli = ["dep:wasmparser", "dep:wasm-encoder"]
+
+[package.metadata.docs.rs]
+# docs.rs supplies the wasm32 standard library; wasm64 needs build-std.
+default-target = "wasm32-unknown-unknown"
+targets = ["wasm32-unknown-unknown"]

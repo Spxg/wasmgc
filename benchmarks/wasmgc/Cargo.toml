@@ -1,0 +1,13 @@
+[package]
+name = "wasmgc-benchmarks"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+test = false
+doctest = false
+
+[dependencies]
+wasmgc = { path = "../..", default-features = false }

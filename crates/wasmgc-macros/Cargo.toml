@@ -1,0 +1,17 @@
+[package]
+name = "wasmgc-macros"
+version = "0.0.0"
+description = "Procedural macros for wasmgc"
+readme.workspace = true
+license.workspace = true
+edition.workspace = true
+
+[lib]
+proc-macro = true
+test = false
+doctest = false
+
+[dependencies]
+proc-macro2 = { version = "1", default-features = false, features = ["proc-macro"] }
+quote = { version = "1", default-features = false, features = ["proc-macro"] }
+syn = { version = "3", default-features = false, features = ["full", "parsing", "printing", "proc-macro"] }

@@ -1,0 +1,30 @@
+body {
+    max-width: 720px;
+    margin: 24px auto;
+    padding: 0 16px;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+}
+
+h1 { font-size: 24px; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+#error { color: #b00020; }
+.canvas-toolbar { display: flex; align-items: center; gap: 8px; }
+.canvas-toolbar input { width: 160px; max-width: 40vw; }
+.canvas-toolbar output { font-variant-numeric: tabular-nums; }
+.canvas-viewport { max-height: 400px; overflow: auto; margin: 16px 0; border: 1px solid #ccc; }
+#canvas { --cell-size: 24px; display: grid; grid-template-columns: repeat(var(--columns), var(--cell-size)); gap: 2px; width: max-content; padding: 4px; }
+.cell { width: var(--cell-size); height: var(--cell-size); padding: 0; border: 0; border-radius: 0; background: var(--color); }
+.cell[aria-pressed="true"] { box-shadow: inset 0 0 0 1px black; }
+fieldset { max-width: 400px; border: 1px solid #ccc; padding: 12px; }
+.palette { display: flex; gap: 12px; margin: 4px 0 16px; }
+.palette-color { display: flex; align-items: center; gap: 8px; padding: 4px 8px; }
+.palette-color[aria-pressed="true"] { outline: 2px solid black; outline-offset: 2px; }
+.swatch { width: 24px; height: 24px; background: var(--color); }
+#picker { vertical-align: middle; }
+#hex { margin-left: 8px; font-family: monospace; }
+.channel { display: grid; grid-template-columns: 16px 1fr 32px; align-items: center; gap: 8px; margin-top: 8px; }
+.channel input { width: 100%; margin: 0; }
+.channel output { text-align: right; font-variant-numeric: tabular-nums; }

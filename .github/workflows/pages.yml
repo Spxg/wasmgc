@@ -1,0 +1,57 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          package-manager-cache: false
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+          rustup default stable
+      - uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: '0.5.4'
+      - uses: actions/configure-pages@v6
+        id: pages
+      - name: Build guide
+        env:
+          MDBOOK_OUTPUT__HTML__SITE_URL: ${{ steps.pages.outputs.base_path }}/
+        run: mdbook build guide --dest-dir target/site
+      - name: Build examples
+        run: node examples/palette/web/build.mjs
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: target/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
