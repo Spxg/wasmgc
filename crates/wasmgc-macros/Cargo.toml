@@ -1,7 +1,8 @@
 [package]
 name = "wasmgc-macros"
-version = "0.0.0"
+version = "0.1.0"
 description = "Procedural macros for wasmgc"
+include = ["/src/**"]
 readme.workspace = true
 license.workspace = true
 edition.workspace = true
