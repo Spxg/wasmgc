@@ -1,0 +1,51 @@
+body {
+    max-width: 1000px;
+    margin: 24px auto;
+    padding: 0 16px;
+    color: #222;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+}
+
+h1 { font-size: 24px; }
+h2 { margin: 0 0 8px; font-size: 18px; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+button, input { padding: 3px 8px; }
+#error { color: #b00020; }
+#counts { margin-bottom: 4px; }
+#object-count { margin-top: 0; color: #555; }
+.trees { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.trees section { min-width: 0; }
+.trees svg { display: block; width: 100%; height: auto; border: 1px solid #ccc; box-sizing: border-box; }
+.tree-view { position: relative; }
+#editor { position: absolute; z-index: 1; width: 240px; max-width: calc(100% - 16px); box-sizing: border-box; padding: 10px; border: 1px solid #777; background: white; }
+#editor label { display: block; margin-bottom: 4px; }
+#value { width: 100%; box-sizing: border-box; }
+.editor-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.edge { stroke: #bbb; stroke-width: 1.5; }
+.node rect { fill: white; stroke: #aaa; stroke-width: 1.5; }
+.node.shared rect, .key.shared { fill: #dff2e3; background: #dff2e3; }
+.node.new rect, .key.new { fill: #fff0d9; background: #fff0d9; }
+.node.old rect { fill: #f5f5f5; }
+.node text, .empty { text-anchor: middle; }
+.node .value { font-size: 17px; font-weight: 600; }
+.node .identity { font-size: 13px; fill: #555; }
+.node[role="button"] { cursor: pointer; }
+.node.selected rect { stroke: #222; stroke-width: 3; }
+.node:focus { outline: none; }
+.node:focus rect { stroke: #222; stroke-width: 3; stroke-dasharray: 4 2; }
+.empty { font-size: 16px; fill: #666; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.key { display: inline-block; width: 16px; height: 16px; border: 1px solid #aaa; }
+.gc-observer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #ccc; }
+#discarded-nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; padding: 0; list-style: none; }
+#discarded-nodes li { display: grid; gap: 3px; padding: 8px; border: 1px solid #ccc; overflow-wrap: anywhere; }
+.gc-state { font-size: 14px; color: #665630; }
+[data-state="collected"] .gc-state { color: #246c36; }
+
+@media (max-width: 700px) {
+    .trees { grid-template-columns: 1fr; }
+}

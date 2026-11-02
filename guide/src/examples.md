@@ -1,5 +1,19 @@
 # Examples
 
+## Persistent tree
+
+[Open the browser example](examples/tree/).
+
+Edit a tree and compare the previous and current versions. Rust copies only the
+path to the edited node; the rest of the tree is shared between versions.
+Matching object labels and highlighted nodes show that sharing.
+
+Only these two versions are retained. Each edit releases the oldest version;
+the page uses weak references to show when nodes no longer referenced by either
+version are actually collected by the browser.
+
+See the [source and local run commands](https://github.com/Spxg/wasmgc/tree/master/examples/tree).
+
 ## Shared palette
 
 [Open the browser example](examples/palette/).

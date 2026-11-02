@@ -31,6 +31,7 @@ members = [
     "crates/wasmgc-macros",
     "examples/breakout",
     "examples/palette",
+    "examples/tree",
 ]
 resolver = "3"
 

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>wasmgc tree history</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./main.mjs"></script>
+</head>
+<body>
+    <main>
+        <a href="../../">Guide</a>
+        <h1>Tree history</h1>
+        <p>Edit a node. Unchanged branches stay shared between the two versions.</p>
+        <p id="status" role="status" data-state="loading">Loading WasmGC…</p>
+        <p id="error" role="alert" hidden></p>
+
+        <p id="counts" aria-live="polite"></p>
+        <p id="object-count"></p>
+
+        <div class="trees">
+            <section>
+                <h2 id="previous-title">Previous</h2>
+                <svg id="previous-tree" viewBox="0 0 400 280" role="img" aria-label="Previous tree"></svg>
+            </section>
+            <section>
+                <h2 id="current-title">Current</h2>
+                <div class="tree-view">
+                    <svg id="current-tree" viewBox="0 0 400 280" role="group" aria-label="Current tree. Select a node to edit its value."></svg>
+                    <form id="editor" hidden>
+                        <label id="editor-label" for="value">Node value</label>
+                        <input id="value" type="number" min="-2147483648" max="2147483647" step="1" required>
+                        <div class="editor-actions">
+                            <button id="save-edit" type="submit">Save</button>
+                            <button id="cancel-edit" type="button">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <p class="legend">
+            <span><span class="key shared" aria-hidden="true"></span> Shared with previous</span>
+            <span><span class="key new" aria-hidden="true"></span> New in current</span>
+        </p>
+        <p>Matching # numbers identify the same GC object. Editing copies only the
+            path from the selected node to the root. Click a current node to edit,
+            or use Tab and Enter or Space. Enter saves; Escape cancels.</p>
+        <p>Only the two displayed versions are retained. Each update discards the
+            older previous version.</p>
+        <p>The browser decides when unreferenced nodes are collected.</p>
+
+        <section class="gc-observer" aria-labelledby="gc-title">
+            <h2 id="gc-title">Discarded nodes</h2>
+            <p>Nodes no longer referenced by either version appear here.</p>
+            <p id="gc-summary" role="status" data-waiting="0" data-collected="0">0 waiting for GC · 0 collected</p>
+            <p id="gc-empty">No discarded nodes yet.</p>
+            <ul id="discarded-nodes"></ul>
+        </section>
+    </main>
+</body>
+</html>

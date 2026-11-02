@@ -15,6 +15,7 @@ Build the full site, including browser examples:
 ```sh
 mdbook build guide --dest-dir target/site
 node examples/palette/web/build.mjs
+node examples/tree/web/build.mjs
 ```
 
 The result is in `target/site/`: the book at the root and browser examples under
