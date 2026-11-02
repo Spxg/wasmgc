@@ -6,5 +6,3 @@ A Rust implementation of WasmGC.
 
 See the [guide](https://spxg.github.io/wasmgc/) for building, Rust APIs, and host
 interoperability.
-
-[Examples](examples) · [Benchmarks](benchmarks)
