@@ -23,10 +23,9 @@ jobs:
         with:
           node-version: 26
           package-manager-cache: false
-      - name: Install Rust
-        run: |
-          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
-          rustup default stable
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
       - uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: '0.5.4'
