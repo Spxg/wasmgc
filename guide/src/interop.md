@@ -3,6 +3,33 @@
 After postprocessing, host functions exchange actual Wasm references. JavaScript
 receives GC objects and host values directly, without numeric handles.
 
+## Loading a module
+
+In a Rust library project, put the following examples in `src/lib.rs` and configure
+`Cargo.toml`:
+
+```toml
+[lib]
+crate-type = ["cdylib"]
+```
+
+Build the library for `wasm32-unknown-unknown` and postprocess it:
+
+```sh
+rustup target add wasm32-unknown-unknown
+cargo build --target wasm32-unknown-unknown --release
+wasmgc target/wasm32-unknown-unknown/release/your_crate.wasm -o app.wasm
+```
+
+Replace `your_crate.wasm` with the library's output filename. Serve `app.wasm`
+alongside your page and load it with:
+
+```js
+const bytes = await (await fetch("./app.wasm")).arrayBuffer();
+const { instance } = await WebAssembly.instantiate(bytes);
+const wasm = instance.exports;
+```
+
 ## Struct exports
 
 Choose which operations to expose to the host:
@@ -18,7 +45,7 @@ pub struct Counter {
 }
 ```
 
-With `wasm = instance.exports`, JavaScript can construct and update a counter:
+JavaScript can construct and update a counter:
 
 ```js
 const counter = wasm["Counter.new"](1);
