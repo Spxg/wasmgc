@@ -41,8 +41,8 @@ pub const FUNCTION_DESC_PREFIX: &str = "__wasmgc_function_desc.";
 /// Padding follows the target C ABI rather than the host's Rust layout.
 ///
 /// The decoder selects [`WASM32`](Self::WASM32) or [`WASM64`](Self::WASM64)
-/// from the module's memory type. For example, `Schema::fields` is at byte 24
-/// on both targets, but occupies four bytes on wasm32 and eight on wasm64.
+/// from the module's memory type. Inline value arrays use the target pointer
+/// alignment even when the preceding header contains no pointers.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Layout {
     /// The width of a data pointer or a function-table slot.
@@ -53,7 +53,7 @@ pub struct Layout {
     pub value_kind_tag_offset: u32,
     /// The offset of a referenced schema pointer.
     pub value_kind_target_offset: u32,
-    /// The complete size of a [`Schema`] descriptor, including padding.
+    /// The size of a [`Schema`] header, including padding.
     pub schema_size: u32,
     /// The offset of [`SCHEMA_MAGIC`].
     pub schema_magic_offset: u32,
@@ -61,7 +61,7 @@ pub struct Layout {
     pub schema_kind_offset: u32,
     /// The offset of the schema field count.
     pub schema_field_count_offset: u32,
-    /// The offset of the field-descriptor array pointer.
+    /// The offset of the inline field descriptors in [`SchemaData`].
     pub schema_fields_offset: u32,
     /// The complete size of an [`Operation`] descriptor.
     pub operation_size: u32,
@@ -74,8 +74,8 @@ pub struct Layout {
     /// The offset of the [`OperationKind`] discriminant.
     pub operation_kind_offset: u32,
     /// The offset of the operation field index.
-    pub operation_field_offset: u32,
-    /// The complete size of a [`Struct`] descriptor.
+    pub operation_field_index_offset: u32,
+    /// The size of a [`Struct`] header, including padding.
     pub struct_export_size: u32,
     /// The offset of [`STRUCT_MAGIC`].
     pub struct_export_magic_offset: u32,
@@ -85,11 +85,11 @@ pub struct Layout {
     pub struct_export_kind_offset: u32,
     /// The offset of the exported operation field index.
     pub struct_export_field_offset: u32,
-    /// The offset of the export name pointer.
+    /// The offset of the inline export name in [`StructData`].
     pub struct_export_name_offset: u32,
     /// The offset of the export name byte count.
     pub struct_export_name_len_offset: u32,
-    /// The complete size of a [`Function`] descriptor.
+    /// The size of a [`Function`] header, including padding.
     pub function_size: u32,
     /// The offset of [`FUNCTION_MAGIC`].
     pub function_magic_offset: u32,
@@ -97,16 +97,12 @@ pub struct Layout {
     pub function_kind_offset: u32,
     /// The offset of the parameter count.
     pub function_param_count_offset: u32,
-    /// The offset of the parameter-descriptor array pointer.
+    /// The offset of inline parameter descriptors in [`FunctionData`].
     pub function_params_offset: u32,
-    /// The offset of the optional result-descriptor pointer.
-    pub function_result_offset: u32,
-    /// The offset of the import module name pointer.
-    pub function_module_offset: u32,
+    /// The offset of the result count, which is zero or one.
+    pub function_result_count_offset: u32,
     /// The offset of the import module name byte count.
     pub function_module_len_offset: u32,
-    /// The offset of the native function name pointer.
-    pub function_name_offset: u32,
     /// The offset of the native function name byte count.
     pub function_name_len_offset: u32,
 }
@@ -118,7 +114,7 @@ impl Layout {
         value_kind_size: 8,
         value_kind_tag_offset: 0,
         value_kind_target_offset: 4,
-        schema_size: 28,
+        schema_size: 24,
         schema_magic_offset: 0,
         schema_kind_offset: 16,
         schema_field_count_offset: 20,
@@ -128,24 +124,22 @@ impl Layout {
         operation_function_offset: 16,
         operation_schema_offset: 20,
         operation_kind_offset: 24,
-        operation_field_offset: 28,
-        struct_export_size: 36,
+        operation_field_index_offset: 28,
+        struct_export_size: 32,
         struct_export_magic_offset: 0,
         struct_export_schema_offset: 16,
         struct_export_kind_offset: 20,
         struct_export_field_offset: 24,
-        struct_export_name_offset: 28,
-        struct_export_name_len_offset: 32,
-        function_size: 48,
+        struct_export_name_offset: 32,
+        struct_export_name_len_offset: 28,
+        function_size: 36,
         function_magic_offset: 0,
         function_kind_offset: 16,
         function_param_count_offset: 20,
-        function_params_offset: 24,
-        function_result_offset: 28,
-        function_module_offset: 32,
-        function_module_len_offset: 36,
-        function_name_offset: 40,
-        function_name_len_offset: 44,
+        function_params_offset: 36,
+        function_result_count_offset: 24,
+        function_module_len_offset: 28,
+        function_name_len_offset: 32,
     };
 
     /// The descriptor layout for a module with 64-bit linear-memory pointers.
@@ -154,7 +148,7 @@ impl Layout {
         value_kind_size: 16,
         value_kind_tag_offset: 0,
         value_kind_target_offset: 8,
-        schema_size: 32,
+        schema_size: 24,
         schema_magic_offset: 0,
         schema_kind_offset: 16,
         schema_field_count_offset: 20,
@@ -164,24 +158,22 @@ impl Layout {
         operation_function_offset: 16,
         operation_schema_offset: 24,
         operation_kind_offset: 32,
-        operation_field_offset: 36,
-        struct_export_size: 48,
+        operation_field_index_offset: 36,
+        struct_export_size: 40,
         struct_export_magic_offset: 0,
         struct_export_schema_offset: 16,
         struct_export_kind_offset: 24,
         struct_export_field_offset: 28,
-        struct_export_name_offset: 32,
-        struct_export_name_len_offset: 40,
-        function_size: 72,
+        struct_export_name_offset: 40,
+        struct_export_name_len_offset: 32,
+        function_size: 36,
         function_magic_offset: 0,
         function_kind_offset: 16,
         function_param_count_offset: 20,
-        function_params_offset: 24,
-        function_result_offset: 32,
-        function_module_offset: 40,
-        function_module_len_offset: 48,
-        function_name_offset: 56,
-        function_name_len_offset: 64,
+        function_params_offset: 40,
+        function_result_count_offset: 24,
+        function_module_len_offset: 28,
+        function_name_len_offset: 32,
     };
 }
 
@@ -455,52 +447,59 @@ impl SchemaKind {
     }
 }
 
-/// A struct or array declaration emitted after Rust resolves its field types.
+/// The header of a struct or array declaration.
 ///
-/// Field descriptors appear in declaration order. An array declaration has
-/// exactly one descriptor, for its element type. References between schemas
-/// may be recursive; the postprocessor emits mutually dependent declarations
-/// in the same Wasm recursion group.
+/// [`SchemaData`] stores its field descriptors inline after this header.
+/// References between schemas may be recursive; the postprocessor emits
+/// mutually dependent declarations in the same Wasm recursion group.
 #[repr(C)]
 pub struct Schema {
     /// The descriptor signature, initialized to `SCHEMA_MAGIC`.
     pub magic: [u8; MAGIC_LEN],
-    /// Whether `fields` describes struct fields or an array element.
+    /// Whether the inline values describe struct fields or an array element.
     pub kind: SchemaKind,
-    /// The descriptor count at `fields`; one for arrays.
+    /// The inline descriptor count; one for arrays.
     pub field_count: u32,
-    /// The linked address of the immutable [`ValueKind`] sequence.
-    pub fields: *const ValueKind,
 }
 
-impl Schema {
+/// A declaration and its field descriptions in one metadata allocation.
+#[repr(C)]
+pub struct SchemaData<const N: usize> {
+    /// The declaration header at the start of this allocation.
+    pub header: Schema,
+    /// Field descriptions in declaration order, or one array element type.
+    pub fields: [ValueKind; N],
+}
+
+impl<const N: usize> SchemaData<N> {
     /// Describes a struct with these fields in declaration order.
     ///
     /// # Panics
     ///
     /// Panics if the field count exceeds `u32::MAX`.
-    pub const fn new(fields: &'static [ValueKind]) -> Self {
-        assert!(fields.len() <= u32::MAX as usize);
+    pub const fn new(fields: [ValueKind; N]) -> Self {
+        assert!(N <= u32::MAX as usize);
         Self {
-            magic: SCHEMA_MAGIC,
-            kind: SchemaKind::Struct,
-            field_count: fields.len() as u32,
-            fields: fields.as_ptr(),
+            header: Schema {
+                magic: SCHEMA_MAGIC,
+                kind: SchemaKind::Struct,
+                field_count: N as u32,
+            },
+            fields,
         }
     }
+}
 
+impl SchemaData<1> {
     /// Describes an array with the supplied element storage type.
-    ///
-    /// # Panics
-    ///
-    /// Panics unless `element` contains exactly one descriptor.
-    pub const fn array(element: &'static [ValueKind]) -> Self {
-        assert!(element.len() == 1);
+    pub const fn array(element: ValueKind) -> Self {
         Self {
-            magic: SCHEMA_MAGIC,
-            kind: SchemaKind::Array,
-            field_count: 1,
-            fields: element.as_ptr(),
+            header: Schema {
+                magic: SCHEMA_MAGIC,
+                kind: SchemaKind::Array,
+                field_count: 1,
+            },
+            fields: [element],
         }
     }
 }
@@ -524,7 +523,7 @@ pub struct Operation {
     /// The operation to emit in place of the shim body.
     pub kind: OperationKind,
     /// The zero-based struct field index, or zero for other operations.
-    pub field: u32,
+    pub field_index: u32,
 }
 
 impl Operation {
@@ -532,7 +531,7 @@ impl Operation {
     pub const fn new(
         schema: *const Schema,
         kind: OperationKind,
-        field: u32,
+        field_index: u32,
         function: *const (),
     ) -> Self {
         Self {
@@ -540,16 +539,17 @@ impl Operation {
             function,
             schema,
             kind,
-            field,
+            field_index,
         }
     }
 }
 
-/// A request for a native struct constructor, getter, or setter export.
+/// The header of a native struct constructor, getter, or setter export.
 ///
 /// The postprocessor generates this function directly from the schema.
 /// Its parameters and result use Wasm values, including native references,
-/// rather than the numeric handle ABI used by Rust shims.
+/// rather than the numeric handle ABI used by Rust shims. [`StructData`]
+/// stores the export name inline after this header.
 #[repr(C)]
 pub struct Struct {
     /// The descriptor signature, initialized to `STRUCT_MAGIC`.
@@ -560,13 +560,20 @@ pub struct Struct {
     pub kind: OperationKind,
     /// The zero-based field index for accessors; zero for constructors.
     pub field: u32,
-    /// The linked address of the UTF-8 export name.
-    pub name: *const u8,
     /// The byte length of the export name.
     pub name_len: u32,
 }
 
-impl Struct {
+/// A struct export request and its name in one metadata allocation.
+#[repr(C)]
+pub struct StructData<const N: usize> {
+    /// The export header at the start of this allocation.
+    pub header: Struct,
+    /// The UTF-8 export name.
+    pub name: [u8; N],
+}
+
+impl<const N: usize> StructData<N> {
     /// Requests an operation exported under `name`.
     ///
     /// Constructors use [`OperationKind::StructNew`] and field index zero.
@@ -579,16 +586,18 @@ impl Struct {
         schema: *const Schema,
         kind: OperationKind,
         field: u32,
-        name: &'static str,
+        name: [u8; N],
     ) -> Self {
-        assert!(name.len() <= u32::MAX as usize);
+        assert!(N <= u32::MAX as usize);
         Self {
-            magic: STRUCT_MAGIC,
-            schema,
-            kind,
-            field,
-            name: name.as_ptr(),
-            name_len: name.len() as u32,
+            header: Struct {
+                magic: STRUCT_MAGIC,
+                schema,
+                kind,
+                field,
+                name_len: N as u32,
+            },
+            name,
         }
     }
 }
@@ -614,35 +623,45 @@ impl FunctionKind {
     }
 }
 
-/// The native signature associated with a numeric Rust function bridge.
+/// The header of a native signature associated with a numeric Rust bridge.
 ///
 /// Exported bridges and signature-address globals have matching temporary
 /// names. Import wrappers instead refer to this descriptor through a marker
 /// call, allowing the linker to discard unused imports. The postprocessor
 /// replaces these markers and temporary exports with native signatures.
+/// [`FunctionData`] stores parameter types, result types, and names inline.
 #[repr(C)]
 pub struct Function {
     /// The descriptor signature, initialized to `FUNCTION_MAGIC`.
     pub magic: [u8; MAGIC_LEN],
     /// Whether the native function imports from or exports to the host.
     pub kind: FunctionKind,
-    /// The number of parameter descriptors at `params`.
+    /// The number of inline parameter descriptors.
     pub param_count: u32,
-    /// The linked address of parameter descriptors in argument order.
-    pub params: *const ValueKind,
-    /// The linked address of one result descriptor, or null for no result.
-    pub result: *const ValueKind,
-    /// The linked address of the UTF-8 import module name; empty for exports.
-    pub module: *const u8,
+    /// The number of inline result descriptors, which is zero or one.
+    pub result_count: u32,
     /// The byte length of the import module name.
     pub module_len: u32,
-    /// The linked address of the UTF-8 native function name.
-    pub name: *const u8,
     /// The byte length of the native function name.
     pub name_len: u32,
 }
 
-impl Function {
+/// A function signature and its names in one metadata allocation.
+#[repr(C)]
+pub struct FunctionData<const P: usize, const R: usize, const M: usize, const N: usize> {
+    /// The signature header at the start of this allocation.
+    pub header: Function,
+    /// Parameter descriptions in argument order.
+    pub params: [ValueKind; P],
+    /// Zero or one result description.
+    pub result: [ValueKind; R],
+    /// The UTF-8 host module name; empty for exports.
+    pub module: [u8; M],
+    /// The UTF-8 function name.
+    pub name: [u8; N],
+}
+
+impl<const P: usize, const R: usize, const M: usize, const N: usize> FunctionData<P, R, M, N> {
     /// Describes a function with these parameters and at most one result.
     ///
     /// `module` is the host module name for imports and is empty for exports.
@@ -651,30 +670,32 @@ impl Function {
     ///
     /// # Panics
     ///
-    /// Panics if the parameter count or either name length exceeds `u32::MAX`.
+    /// Panics if there is more than one result, or the parameter count or either
+    /// name length exceeds `u32::MAX`.
     pub const fn new(
         kind: FunctionKind,
-        params: &'static [ValueKind],
-        result: Option<&'static ValueKind>,
-        module: &'static str,
-        name: &'static str,
+        params: [ValueKind; P],
+        result: [ValueKind; R],
+        module: [u8; M],
+        name: [u8; N],
     ) -> Self {
-        assert!(params.len() <= u32::MAX as usize);
-        assert!(module.len() <= u32::MAX as usize);
-        assert!(name.len() <= u32::MAX as usize);
+        assert!(P <= u32::MAX as usize);
+        assert!(R <= 1);
+        assert!(M <= u32::MAX as usize);
+        assert!(N <= u32::MAX as usize);
         Self {
-            magic: FUNCTION_MAGIC,
-            kind,
-            param_count: params.len() as u32,
-            params: params.as_ptr(),
-            result: match result {
-                Some(result) => result,
-                None => core::ptr::null(),
+            header: Function {
+                magic: FUNCTION_MAGIC,
+                kind,
+                param_count: P as u32,
+                result_count: R as u32,
+                module_len: M as u32,
+                name_len: N as u32,
             },
-            module: module.as_ptr(),
-            module_len: module.len() as u32,
-            name: name.as_ptr(),
-            name_len: name.len() as u32,
+            params,
+            result,
+            module,
+            name,
         }
     }
 }
@@ -683,26 +704,22 @@ impl Function {
 // dereferences the target.
 unsafe impl Sync for ValueKind {}
 
-// SAFETY: Sharing a schema exposes immutable metadata; no safe operation on the
-// descriptor reads through its field pointer.
-unsafe impl Sync for Schema {}
-
 // SAFETY: The function and schema pointers are metadata. Sharing this descriptor
 // neither calls the function nor dereferences the schema.
 unsafe impl Sync for Operation {}
 
-// SAFETY: The schema and name pointers are opaque metadata. No safe operation on
-// this descriptor dereferences them.
+// SAFETY: The schema pointer is opaque metadata. No safe operation on this
+// descriptor dereferences it.
 unsafe impl Sync for Struct {}
-
-// SAFETY: The signature and name pointers are opaque metadata. No safe method
-// reads through them.
-unsafe impl Sync for Function {}
 
 // Check the target C layouts at compile time so descriptor reads use rustc's
 // actual offsets, including pointer-width-dependent padding.
 const _: () = {
-    use core::mem::{offset_of, size_of};
+    use core::mem::{align_of, offset_of, size_of};
+
+    const fn align_up(size: usize, alignment: usize) -> usize {
+        size.next_multiple_of(alignment)
+    }
 
     let layout = match size_of::<*const ()>() {
         4 => Layout::WASM32,
@@ -713,9 +730,17 @@ const _: () = {
     assert!(size_of::<ValueKind>() == layout.value_kind_size as usize);
     assert!(offset_of!(ValueKind, target) == layout.value_kind_target_offset as usize);
     assert!(size_of::<Schema>() == layout.schema_size as usize);
+    assert!(offset_of!(Schema, magic) == layout.schema_magic_offset as usize);
     assert!(offset_of!(Schema, kind) == layout.schema_kind_offset as usize);
     assert!(offset_of!(Schema, field_count) == layout.schema_field_count_offset as usize);
-    assert!(offset_of!(Schema, fields) == layout.schema_fields_offset as usize);
+    assert!(offset_of!(SchemaData<0>, header) == 0);
+    assert!(offset_of!(SchemaData<0>, fields) == layout.schema_fields_offset as usize);
+    assert!(offset_of!(SchemaData<3>, fields) == layout.schema_fields_offset as usize);
+    assert!(size_of::<SchemaData<0>>() == layout.schema_fields_offset as usize);
+    assert!(
+        size_of::<SchemaData<3>>()
+            == layout.schema_fields_offset as usize + 3 * layout.value_kind_size as usize
+    );
     assert!(size_of::<Operation>() == layout.operation_size as usize);
     assert!(offset_of!(Operation, function) == layout.operation_function_offset as usize);
     assert!(size_of::<Struct>() == layout.struct_export_size as usize);
@@ -723,16 +748,49 @@ const _: () = {
     assert!(offset_of!(Struct, schema) == layout.struct_export_schema_offset as usize);
     assert!(offset_of!(Struct, kind) == layout.struct_export_kind_offset as usize);
     assert!(offset_of!(Struct, field) == layout.struct_export_field_offset as usize);
-    assert!(offset_of!(Struct, name) == layout.struct_export_name_offset as usize);
     assert!(offset_of!(Struct, name_len) == layout.struct_export_name_len_offset as usize);
+    assert!(offset_of!(StructData<0>, header) == 0);
+    assert!(offset_of!(StructData<0>, name) == layout.struct_export_name_offset as usize);
+    assert!(offset_of!(StructData<5>, name) == layout.struct_export_name_offset as usize);
+    assert!(size_of::<StructData<0>>() == layout.struct_export_size as usize);
+    assert!(
+        size_of::<StructData<5>>()
+            == align_up(
+                layout.struct_export_name_offset as usize + 5,
+                align_of::<StructData<5>>()
+            )
+    );
     assert!(size_of::<Function>() == layout.function_size as usize);
     assert!(offset_of!(Function, magic) == layout.function_magic_offset as usize);
     assert!(offset_of!(Function, kind) == layout.function_kind_offset as usize);
     assert!(offset_of!(Function, param_count) == layout.function_param_count_offset as usize);
-    assert!(offset_of!(Function, params) == layout.function_params_offset as usize);
-    assert!(offset_of!(Function, result) == layout.function_result_offset as usize);
-    assert!(offset_of!(Function, module) == layout.function_module_offset as usize);
+    assert!(offset_of!(Function, result_count) == layout.function_result_count_offset as usize);
     assert!(offset_of!(Function, module_len) == layout.function_module_len_offset as usize);
-    assert!(offset_of!(Function, name) == layout.function_name_offset as usize);
     assert!(offset_of!(Function, name_len) == layout.function_name_len_offset as usize);
+
+    type EmptyFunction = FunctionData<0, 0, 0, 0>;
+    type NamedFunction = FunctionData<2, 1, 3, 5>;
+    type VoidFunction = FunctionData<1, 0, 0, 1>;
+    let params = layout.function_params_offset as usize;
+    let value_size = layout.value_kind_size as usize;
+    assert!(offset_of!(EmptyFunction, header) == 0);
+    assert!(offset_of!(EmptyFunction, params) == params);
+    assert!(offset_of!(EmptyFunction, result) == params);
+    assert!(offset_of!(EmptyFunction, module) == params);
+    assert!(offset_of!(EmptyFunction, name) == params);
+    assert!(size_of::<EmptyFunction>() == params);
+    assert!(offset_of!(NamedFunction, params) == params);
+    assert!(offset_of!(NamedFunction, result) == params + 2 * value_size);
+    assert!(offset_of!(NamedFunction, module) == params + 3 * value_size);
+    assert!(offset_of!(NamedFunction, name) == params + 3 * value_size + 3);
+    assert!(
+        size_of::<NamedFunction>()
+            == align_up(params + 3 * value_size + 3 + 5, align_of::<NamedFunction>())
+    );
+    assert!(offset_of!(VoidFunction, result) == params + value_size);
+    assert!(offset_of!(VoidFunction, module) == params + value_size);
+    assert!(offset_of!(VoidFunction, name) == params + value_size);
+    assert!(
+        size_of::<VoidFunction>() == align_up(params + value_size + 1, align_of::<VoidFunction>())
+    );
 };

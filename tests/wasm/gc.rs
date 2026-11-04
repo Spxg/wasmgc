@@ -11,8 +11,8 @@ pub struct GcCycle {
 }
 
 #[wasmgc]
-pub fn gc_root_new(value: i32) -> u32 {
-    Gc::new(Counter { value }).into_raw()
+pub fn gc_root_new(counter: Gc<Counter>) -> u32 {
+    counter.into_raw()
 }
 
 /// Creates another root and leaves the original handle live.

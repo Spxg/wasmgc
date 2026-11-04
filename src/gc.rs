@@ -171,10 +171,6 @@ impl<T: GcHeapObj> Gc<T> {
     ///
     /// The number remains usable only while this root is alive. Released slots
     /// may be reused, so handles are not object identities.
-    ///
-    /// The postprocessed export `wasmgc.ref_get(handle)` retrieves the underlying
-    /// GC reference without releasing this root. A host that retains the returned
-    /// reference keeps the object alive independently.
     pub fn as_raw(&self) -> u32 {
         self.handle.get()
     }

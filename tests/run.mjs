@@ -122,8 +122,8 @@ test("test_gc_export_result", async () => {
 
 test("test_gc_roots", async () => {
     const wasm = instantiate();
-    const original = wasm.gc_root_new(42);
-    const reference = new WeakRef(wasm["wasmgc.ref_get"](original));
+    const reference = new WeakRef(wasm.make_counter(42));
+    const original = wasm.gc_root_new(reference.deref());
 
     await collect();
     assert.notEqual(reference.deref(), undefined);

@@ -32,18 +32,6 @@ use crate::{GcValue, abi, schema::ValueKind};
 ///     value
 /// }
 /// ```
-///
-/// # Raw host access
-///
-/// When the module uses external-reference root slots, the postprocessor exports:
-///
-/// - `wasmgc.externref_new(value)`: allocates an owned root and returns its handle.
-/// - `wasmgc.externref_get(handle)`: reads a value without releasing its root.
-/// - `wasmgc.externref_take(handle)`: returns the value and releases its root.
-///
-/// Use these exports only when working with raw handles. `externref_take` must
-/// receive ownership transferred by [`Self::into_raw`] or `externref_new`;
-/// consuming a handle borrowed from [`Self::as_raw`] invalidates its Rust owner.
 #[must_use]
 pub struct ExternRef {
     handle: NonZeroU32,
@@ -93,9 +81,8 @@ impl ExternRef {
 
     /// Transfers ownership of the root slot to the caller.
     ///
-    /// The recipient must eventually release it, either by recovering Rust
-    /// ownership with [`Self::from_raw`] or by calling the postprocessed export
-    /// `wasmgc.externref_take(handle)`.
+    /// The recipient must eventually recover ownership with [`Self::from_raw`]
+    /// and drop the resulting root.
     #[inline]
     pub fn into_raw(self) -> u32 {
         ManuallyDrop::new(self).handle.get()
@@ -108,8 +95,7 @@ impl ExternRef {
     /// `handle` must be a live, nonzero slot in this Wasm instance's
     /// external-reference table. Its owner must transfer exclusive ownership:
     /// no other owner may release it, and the transfer may be consumed only once.
-    /// Such ownership can come from [`Self::into_raw`], a generated ABI adapter,
-    /// or the postprocessed export `wasmgc.externref_new(value)`.
+    /// Such ownership can come from [`Self::into_raw`] or a generated ABI adapter.
     ///
     /// GC-object handles, borrowed handles, released handles, and handles from
     /// other instances are invalid. A null host value still requires a nonzero

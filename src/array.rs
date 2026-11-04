@@ -12,7 +12,7 @@ use alloc::vec::Vec;
 
 use crate::{
     Gc, GcHeapObj, GcValue, abi,
-    schema::{Operation, OperationKind, Schema, SchemaKind},
+    schema::{Operation, OperationKind, Schema, SchemaData, SchemaKind},
     value::GcAbi,
 };
 
@@ -74,7 +74,8 @@ pub struct Array<T: GcValue> {
 unsafe impl<T: GcValue> GcHeapObj for Array<T> {
     const KIND: SchemaKind = SchemaKind::Array;
 
-    const SCHEMA: *const Schema = &Schema::array(&[T::KIND]);
+    const SCHEMA: *const Schema =
+        (&SchemaData::array(T::KIND) as *const SchemaData<1>).cast::<Schema>();
 }
 
 const COPY_BATCH_SIZE: usize = 64;

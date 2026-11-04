@@ -145,35 +145,25 @@ impl<'a> Function<'a> {
     ) -> TokenStream {
         let kind = syn::Ident::new(kind, Span::call_site());
         let descriptor = self.identifier("descriptor");
-        let parameters = self.identifier("parameters");
-        let result_name = self.identifier("result");
         let value_types = self.parameters.iter().map(|parameter| parameter.value_type);
         let count = self.parameters.len();
-        let (result_static, result) = match self.result {
-            Some(ty) => (
-                quote! {
-                    static #result_name: ::wasmgc::__private::ValueKind =
-                        <#ty as ::wasmgc::GcValue>::KIND;
-                },
-                quote!(Some(&#result_name)),
-            ),
-            None => (TokenStream::new(), quote!(None)),
+        let (result_count, result) = match self.result {
+            Some(ty) => (1usize, quote!([<#ty as ::wasmgc::GcValue>::KIND])),
+            None => (0usize, quote!([])),
         };
+        let module_bytes = syn::LitByteStr::new(module.as_bytes(), Span::call_site());
+        let module_len = module.len();
+        let name_bytes = syn::LitByteStr::new(name.as_bytes(), Span::call_site());
+        let name_len = name.len();
         quote! {
-            static #parameters: [::wasmgc::__private::ValueKind; #count] = [
-                #(<#value_types as ::wasmgc::GcValue>::KIND),*
-            ];
-
-            #result_static
-
             #attributes
-            static #descriptor: ::wasmgc::__private::Function =
-                ::wasmgc::__private::Function::new(
+            static #descriptor: ::wasmgc::__private::FunctionData<#count, #result_count, #module_len, #name_len> =
+                ::wasmgc::__private::FunctionData::new(
                     ::wasmgc::__private::FunctionKind::#kind,
-                    &#parameters,
+                    [#(<#value_types as ::wasmgc::GcValue>::KIND),*],
                     #result,
-                    #module,
-                    #name,
+                    *#module_bytes,
+                    *#name_bytes,
                 );
         }
     }

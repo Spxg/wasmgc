@@ -93,8 +93,9 @@ pub mod __private {
     pub use wasmgc_macros::BuildGcStruct;
 
     pub use crate::schema::{
-        FUNCTION_BRIDGE_PREFIX, FUNCTION_DESC_PREFIX, Function, FunctionKind, Operation,
-        OperationKind, STRUCT_EXPORT_DESC_PREFIX, Schema, SchemaKind, Struct, ValueKind, ValueTag,
+        FUNCTION_BRIDGE_PREFIX, FUNCTION_DESC_PREFIX, Function, FunctionData, FunctionKind,
+        Operation, OperationKind, STRUCT_EXPORT_DESC_PREFIX, Schema, SchemaData, SchemaKind,
+        Struct, StructData, ValueKind, ValueTag,
     };
     pub use crate::value::GcAbi as Abi;
 

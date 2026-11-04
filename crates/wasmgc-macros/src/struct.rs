@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Fields, ItemStruct, Meta, ext::IdentExt, parse::Parser};
 
@@ -191,12 +191,10 @@ pub fn derive(input: ItemStruct) -> syn::Result<TokenStream> {
         impl ::wasmgc::__private::MustNotImplDrop for #name {}
 
         const _: () = {
-            static FIELDS: [::wasmgc::__private::ValueKind; #field_count] = [
-                #(<#types as ::wasmgc::GcValue>::KIND),*
-            ];
-
-            static SCHEMA: ::wasmgc::__private::Schema =
-                ::wasmgc::__private::Schema::new(&FIELDS);
+            static SCHEMA: ::wasmgc::__private::SchemaData<#field_count> =
+                ::wasmgc::__private::SchemaData::new([
+                    #(<#types as ::wasmgc::GcValue>::KIND),*
+                ]);
 
             #(#exports)*
 
@@ -223,7 +221,8 @@ pub fn derive(input: ItemStruct) -> syn::Result<TokenStream> {
             // ABI. allocate retains field owners and returns a fresh root;
             // the transparent view preserves the lifetime of the borrowed root.
             unsafe impl ::wasmgc::GcStruct for #name {
-                const SCHEMA: *const ::wasmgc::__private::Schema = &raw const SCHEMA;
+                const SCHEMA: *const ::wasmgc::__private::Schema =
+                    (&raw const SCHEMA).cast::<::wasmgc::__private::Schema>();
 
                 type View = #view;
 
@@ -287,17 +286,19 @@ fn struct_export_metadata(
     );
     let suffix = format!(".{method}");
     let export_name = format!("{}{suffix}", name.unraw());
+    let name_bytes = syn::LitByteStr::new(export_name.as_bytes(), Span::call_site());
+    let name_len = export_name.len();
     quote! {
         #[used]
         #[unsafe(export_name = concat!(
             "__wasmgc_struct_export_desc.", module_path!(), ".", stringify!(#name), #suffix
         ))]
-        static #descriptor: ::wasmgc::__private::Struct =
-            ::wasmgc::__private::Struct::new(
+        static #descriptor: ::wasmgc::__private::StructData<#name_len> =
+            ::wasmgc::__private::StructData::new(
                 <#name as ::wasmgc::GcStruct>::SCHEMA,
                 ::wasmgc::__private::OperationKind::#kind,
                 #field,
-                #export_name,
+                *#name_bytes,
             );
     }
 }
