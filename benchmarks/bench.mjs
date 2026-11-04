@@ -3,7 +3,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
@@ -40,7 +40,7 @@ await writeFile(join(output, "package.json"), '{"type":"module"}\n');
 execute("cargo", [
     "build", "--manifest-path", join(directory, "Cargo.toml"), "--workspace",
     "--target", "wasm32-unknown-unknown", "--release", "--locked",
-    "--target-dir", target, "--config", 'target.wasm32-unknown-unknown.linker="wasm-ld"',
+    "--target-dir", target,
 ], { ...process.env, RUSTFLAGS: "-C target-feature=+reference-types" });
 
 execute("cargo", [
@@ -56,12 +56,19 @@ execute("wasm-bindgen", [
     "--out-dir", bindgenOutput, "--out-name", "wasm_bindgen", "--no-typescript",
 ]);
 
+const bindgenPath = join(bindgenOutput, "wasm_bindgen_bg.wasm");
+for (const path of [gcPath, bindgenPath]) {
+    const unoptimized = path.replace(/\.wasm$/, ".unoptimized.wasm");
+    await copyFile(path, unoptimized);
+    execute("wasm-opt", [unoptimized, "-O3", "--enable-gc", "-o", path]);
+}
+
 const { instance } = await WebAssembly.instantiate(await readFile(gcPath), {
     env: { counter_add },
 });
 const gc = instance.exports;
 const wbg = await import(pathToFileURL(join(bindgenOutput, "wasm_bindgen.js")));
-wbg.initSync({ module: await readFile(join(bindgenOutput, "wasm_bindgen_bg.wasm")) });
+wbg.initSync({ module: await readFile(bindgenPath) });
 const { ExportedValue, ExportedExternalValue } = wbg;
 
 const nativeCases = [

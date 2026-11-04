@@ -10,4 +10,4 @@ test = false
 doctest = false
 
 [dependencies]
-wasm-bindgen = { version = "=0.2.129", default-features = false }
+wasm-bindgen = { version = "=0.2.130", default-features = false }
