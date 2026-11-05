@@ -39,3 +39,7 @@ node examples/breakout/run.mjs
 
 See the [source](https://github.com/Spxg/wasmgc/tree/master/examples/breakout).
 Both terminal commands build and postprocess the Wasm module automatically.
+
+## Benchmarks
+
+[Compare wasmgc and wasm-bindgen in your browser](benchmarks/).

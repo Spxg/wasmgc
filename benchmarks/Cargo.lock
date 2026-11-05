@@ -3,6 +3,20 @@
 version = 4
 
 [[package]]
+name = "benchmark-wasm-bindgen"
+version = "0.0.0"
+dependencies = [
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "benchmark-wasmgc"
+version = "0.0.0"
+dependencies = [
+ "wasmgc",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -68,13 +82,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "wasm-bindgen-benchmarks"
-version = "0.0.0"
-dependencies = [
- "wasm-bindgen",
-]
-
-[[package]]
 name = "wasm-bindgen-macro"
 version = "0.2.130"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -111,13 +118,6 @@ name = "wasmgc"
 version = "0.1.2"
 dependencies = [
  "wasmgc-macros",
-]
-
-[[package]]
-name = "wasmgc-benchmarks"
-version = "0.0.0"
-dependencies = [
- "wasmgc",
 ]
 
 [[package]]

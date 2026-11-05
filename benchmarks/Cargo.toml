@@ -1,11 +1,6 @@
 [workspace]
-members = ["wasm-bindgen", "wasmgc"]
+members = ["wasmgc", "wasm-bindgen"]
 resolver = "3"
-
-[workspace.package]
-version = "0.0.0"
-edition = "2024"
-publish = false
 
 [profile.release]
 opt-level = 3

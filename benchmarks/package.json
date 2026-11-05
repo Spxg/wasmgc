@@ -2,10 +2,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bench": "node --expose-gc bench.mjs",
-    "check": "node bench.mjs --check"
+    "build": "node build.mjs",
+    "dev": "node serve.mjs"
   },
   "devDependencies": {
-    "mitata": "1.0.34"
+    "mitata": "1.0.34",
+    "prismjs": "1.30.0"
   }
 }

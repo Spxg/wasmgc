@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>wasmgc benchmarks</title>
+    <link rel="stylesheet" href="./prism/prism.css">
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./main.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <a href="https://github.com/Spxg/wasmgc/tree/master/benchmarks">Source code</a>
+      <h1>wasmgc benchmarks</h1>
+      <p>Compare wasmgc and wasm-bindgen. Click Run to test both, or (?) to view the Rust code.</p>
+      <p>Nanoseconds per operation (lower is better); faster results are bold. ± is the relative margin of error at 95% confidence.</p>
+      <p><button id="run-all" type="button" class="benchmark-run" disabled>Run all</button></p>
+      <p id="status" role="status" aria-live="polite">Loading WebAssembly and checking results…</p>
+      <pre id="error" hidden></pre>
+
+      <section data-group="js" aria-labelledby="js-heading">
+        <h2 id="js-heading">JS accesses Rust data</h2>
+        <div class="table-scroll">
+          <table>
+            <caption>Create a Point and read or write struct fields.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Benchmark</th>
+                <th scope="col">wasmgc</th>
+                <th scope="col">wasm-bindgen</th>
+                <th scope="col">Run</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section data-group="objects" aria-labelledby="objects-heading">
+        <h2 id="objects-heading">Object references</h2>
+        <div class="table-scroll">
+          <table>
+            <caption>Read or replace shared children, update a value shared by 16 holders, and traverse 1,024 linked nodes. Results cover the whole update or traversal.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Benchmark</th>
+                <th scope="col">wasmgc</th>
+                <th scope="col">wasm-bindgen</th>
+                <th scope="col">Run</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        <p>Release builds with LTO and wasm-opt -O3; no forced GC. Fixture setup and cleanup, including returned child and Node wrappers, are outside timing.</p>
+        <p id="browser"></p>
+      </footer>
+    </main>
+  </body>
+</html>

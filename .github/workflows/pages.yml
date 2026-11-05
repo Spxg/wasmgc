@@ -29,6 +29,14 @@ jobs:
       - uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: '0.5.4'
+      - name: Install benchmark tools
+        run: |
+          cargo install wasm-bindgen-cli --version 0.2.130 --locked
+          curl --fail --location --retry 3 \
+            https://github.com/WebAssembly/binaryen/releases/download/version_130/binaryen-version_130-x86_64-linux.tar.gz \
+            -o "$RUNNER_TEMP/binaryen.tar.gz"
+          tar -xzf "$RUNNER_TEMP/binaryen.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/binaryen-version_130/bin" >> "$GITHUB_PATH"
       - uses: actions/configure-pages@v6
         id: pages
       - name: Build guide
@@ -39,6 +47,10 @@ jobs:
         run: |
           node examples/palette/web/build.mjs
           node examples/tree/web/build.mjs
+      - name: Build benchmarks
+        run: |
+          npm ci --prefix benchmarks
+          npm run build --prefix benchmarks
       - uses: actions/upload-pages-artifact@v5
         with:
           path: target/site
