@@ -34,4 +34,5 @@ wasmgc input.wasm -o output.wasm
 ```
 
 [Getting started](https://spxg.github.io/wasmgc/getting-started.html) ·
-[API reference](https://docs.rs/wasmgc/)
+[API reference](https://docs.rs/wasmgc) ·
+[Benchmarks](https://spxg.github.io/wasmgc/benchmarks)
